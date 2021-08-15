@@ -2,6 +2,22 @@
 
 Steam inventory prices project's backend. This service will handle all the communication with steam api and manage items lists.
 
+
+# Running Scripts
+
+When running the project, cd into `backend` project and run `export PYTHONPATH=$(pwd)`
+
+Install virutalenvironment (if not yet installed): `pip install virtualenv`
+
+Create your virtualenvironment (if not yet created) with `Python 3.8.2`: `python -m virutalenv env`
+
+Start your virutal environment: `source env/bin/activate`
+
+Install dependencies: `pip install -r requirements.txt`
+
+To generate the spreadsheet, run `python scripts/generate_spreadsheet.py`
+
+
 # Managing Dependencies
 
 Needed packages (and optionally their version) are added to `requirements.in` file.
