@@ -1,0 +1,3 @@
+"""
+Steam API communication layer
+"""
