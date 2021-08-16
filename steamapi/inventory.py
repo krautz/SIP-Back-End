@@ -28,9 +28,9 @@ async def get_user_inventory(steam_user_id, app_id, language = "english"):
             item_class_id = api_item["classid"]
             user_items[item_class_id] = {
                 "amount": 0,  # amount is present on api response assets. just initializing it.
-                "app_id": api_item["appid"],
-                "market_hash_name": api_item["market_hash_name"],
-                "name": api_item["market_name"],
+                "app_id": api_item["appid"],  # game code that has the item
+                "market_hash_name": api_item["market_hash_name"],  # item 'id' to requst price later
+                "name": api_item["market_name"],  # item human friendly name
             }
 
     # get amount of each user items
