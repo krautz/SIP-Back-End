@@ -17,7 +17,7 @@ async def get_user_inventory(steam_user_id, app_id, language = "english"):
     """
     # obtain user's inventory
     user_inventory_url = USER_INVENTOR_URL.format(
-        base_url = BASE_URL, steam_user_id = steam_user_id, app_id = app_id, language = language
+        steam_user_id = steam_user_id, app_id = app_id, language = language
     )
     async with aiohttp.ClientSession() as session:
         async with session.get(user_inventory_url) as response:
