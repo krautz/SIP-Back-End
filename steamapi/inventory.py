@@ -1,8 +1,6 @@
 import aiohttp
 import asyncio
 
-from collections import defaultdict
-
 from steamapi.constants import BASE_URL, USER_INVENTOR_URL
 
 async def get_user_inventory(steam_user_id, app_id, language = "english"):
@@ -24,25 +22,23 @@ async def get_user_inventory(steam_user_id, app_id, language = "english"):
             user_items_api_response = await response.json()
 
     # get user tradable items
-    user_items = []
+    user_items = {}
     for api_item in user_items_api_response["descriptions"]:
         if api_item["tradable"] == 1:
-            user_items.append({
+            item_class_id = api_item["classid"]
+            user_items[item_class_id] = {
+                "amount": 0,  # amount is present on api response assets. just initializing it.
                 "app_id": api_item["appid"],
-                "class_id": api_item["classid"],
                 "market_hash_name": api_item["market_hash_name"],
                 "name": api_item["market_name"],
-            })
+            }
 
-    # get ammount of each user items, mapped by item classid
-    user_items_quantities = defaultdict(lambda: 0)
+    # get amount of each user items
     for api_asset in user_items_api_response["assets"]:
-        class_id = api_asset["classid"]
-        user_items_quantities[class_id] += int(api_asset["amount"])
+        item_class_id = api_asset["classid"]
 
-    # add to user items the amount of each item
-    for user_item in user_items:
-        class_id = user_item["class_id"]
-        user_item["amount"] = user_items_quantities[class_id]
+        # skip items not present in user items (i.e. not tradable ones)
+        if user_item := user_items.get(item_class_id):
+            user_item["amount"] += int(api_asset["amount"])
 
-    return user_items
+    return list(user_items.values())
