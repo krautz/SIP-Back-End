@@ -1,1 +1,3 @@
 aiohttp
+pandas
+openpyxl  # pandas xlsx writer
