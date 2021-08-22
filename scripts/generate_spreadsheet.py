@@ -16,6 +16,7 @@ async def main():
     currency = 7  # reminder - with html mode only USD is possible
     item_price_source = "html"  # reminder only html does not rate limit with used sleep time
     item_price_retrieval_mode = "linear"  # reminder - parallel will rate limit you
+    spreadsheet_name = "cs_go_items_prices" + ".xlsx"
 
     # get user's inventory
     user_items = []
@@ -52,7 +53,7 @@ async def main():
         },
         ignore_index = True
     )
-    items_data_frame.to_excel('cs_go_items_prices.xlsx', index=False)
+    items_data_frame.to_excel(spreadsheet_name, index=False)
 
 if __name__ == "__main__":
     asyncio.run(main())
