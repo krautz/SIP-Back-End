@@ -43,10 +43,6 @@ async def _add_item_price_from_history(session, item, currency):
     item["price_date"] = datetime.utcnow().strftime("%Y-%m-%d")
     item["price_date_timestamp"] = int(time())
 
-    # API RESPONSE:
-    # response will have all prices in an _ordered_ array by date and time on "prices" key.
-    # each "prices" entry has 3 fields: time, value and a stringified number (probably amount sold)
-
     # request item price and in-place add it to the item dict
     async with session.get(item_price_url) as response:
         api_response = await response.json()
@@ -80,11 +76,6 @@ async def _add_item_price_from_overview(session, item, currency):
     # set item price date and timestamp
     item["price_date"] = datetime.utcnow().strftime("%Y-%m-%d")
     item["price_date_timestamp"] = int(time())
-
-    # API RESPONSE:
-    # response will have last lowest sold price (string with currency), median price (do not now
-    # time frame for it probably one hour), volume sold (do not now time frame for it, probably one
-    # hour) and success
 
     # request item price and in-place add it to the item dict
     async with session.get(item_price_url) as response:
@@ -120,11 +111,6 @@ async def _add_item_price_from_market_html(session, item, currency = None):
     # set item price date and timestamp
     item["price_date"] = datetime.utcnow().strftime("%Y-%m-%d")
     item["price_date_timestamp"] = int(time())
-
-    # API RESPONSE:
-    # response will have market item listing web pae html. From there, we can retrieve prices
-    # history, it will be held on a "var line1=" variable. From there we extract history array
-    # and then json.load the history
 
     # request item price and in-place add it to the item dict
     async with session.get(item_price_url) as response:
