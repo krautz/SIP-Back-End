@@ -48,8 +48,10 @@ async def _add_item_price_from_history(session, item, currency):
         api_response = await response.json()
         if api_response and api_response.get("success"):
             item["price_unitary"] = api_response["prices"][-1][1]
+            item["api_error"] = "no"
         else:
-            item["price_unitary"] = "Error Retrieving Unitary Price"
+            item["price_unitary"] = 0
+            item["api_error"] = "yes"
             print(f"status: {response.status}")
             print(f"Error retrieving price {item['name']} - {item['market_hash_name']}")
 
@@ -82,8 +84,10 @@ async def _add_item_price_from_overview(session, item, currency):
         api_response = await response.json()
         if api_response and api_response.get("success"):
             item["price_unitary"] = float(api_response["median_price"].split()[1])
+            item["api_error"] = "no"
         else:
-            item["price_unitary"] = "Error Retrieving Unitary Price"
+            item["price_unitary"] = 0
+            item["api_error"] = "yes"
             print(f"status: {response.status}")
             print(f"Error retrieving price {item['name']} - {item['market_hash_name']}")
 
@@ -121,8 +125,10 @@ async def _add_item_price_from_market_html(session, item, currency = None):
         if history_start_index != -1 and history_end_index != -1:
             item_price_history = json.loads(api_response[history_start_index:history_end_index+3])
             item["price_unitary"] = item_price_history[-1][1]
+            item["api_error"] = "no"
         else:
-            item["price_unitary"] = "Error Retrieving Unitary Price"
+            item["price_unitary"] = 0
+            item["api_error"] = "yes"
             print(f"status: {response.status}")
             print(f"Error retrieving price {item['name']} - {item['market_hash_name']}")
 
