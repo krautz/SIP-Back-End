@@ -31,12 +31,14 @@ def write_items_to_excel(items, summary, excel_file_name):
     # error -> no file name in current directory: do nothing
     except:
         excel_writer = pd.ExcelWriter(excel_file_name, engine="openpyxl")
+        has_summary_spreadsheet = False
         print("Excel file name provided not found. Initializing empty one.")
-        pass
 
     # success -> keep already present sheets, and remove the ones that will be overwritten
     else:
+        has_summary_spreadsheet = False
         if "Summary" in excel_book.sheetnames:
+            has_summary_spreadsheet = True
             excel_book.remove(excel_book["Summary"])
         if today_date in excel_book.sheetnames:
             excel_book.remove(excel_book[today_date])
@@ -74,7 +76,7 @@ def write_items_to_excel(items, summary, excel_file_name):
         "price_date": today_sum["price_date"],
     }
     last_summary_line = summary_df.shape[0] - 1
-    if summary_df["price_date"][last_summary_line] == today_date:
+    if has_summary_spreadsheet and summary_df["price_date"][last_summary_line] == today_date:
         summary_df.at[last_summary_line, "api_error"] = today_summary["api_error"]
         summary_df.at[last_summary_line, "price_total"] = today_summary["price_total"]
     else:
