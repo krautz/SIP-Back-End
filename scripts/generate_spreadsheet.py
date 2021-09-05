@@ -20,6 +20,9 @@ async def main(
     for app_id in app_ids:
         user_items += await get_user_inventory(steam_id, app_id, item_names_language)
 
+    # sort items by name
+    user_items.sort(key = lambda item: item["name"])
+
     # filter out unwanted items
     user_filtered_items = []
     for item in user_items:
@@ -33,6 +36,9 @@ async def main(
     await add_items_price(
         user_filtered_items, currency, item_price_source, item_price_retrieval_mode
     )
+
+    # sort items by app id
+    user_filtered_items.sort(key = lambda item: item["app_id"])
 
     # write to xlsx file
     write_items_to_excel(user_filtered_items, [], excel_file_name)
