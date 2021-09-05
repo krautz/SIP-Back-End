@@ -24,7 +24,7 @@ async def get_user_inventory(steam_user_id, app_id, language = "english"):
     # get user tradable items
     user_items = {}
     for api_item in user_items_api_response["descriptions"]:
-        if api_item["tradable"] == 1:
+        if api_item["marketable"] == 1:
             item_class_id = api_item["classid"]
             user_items[item_class_id] = {
                 "amount": 0,  # amount is present on api response assets. just initializing it.
