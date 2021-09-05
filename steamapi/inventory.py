@@ -3,13 +3,14 @@ import asyncio
 
 from steamapi.constants import BASE_URL, USER_INVENTOR_URL
 
-async def get_user_inventory(steam_user_id, app_id, language = "english"):
+async def get_user_inventory(steam_user_id, app_id, language = "english", as_dict = False):
     """
     Request Steam API an user's inventory items for a specific app.
 
     :param steam_user_id: user steam id, it can be found at https://store.steampowered.com/account/
     :param app_id: steam app id to retrieve items from. 730 is CS:GO.
     :param language: language to retrieve item names.
+    :param as_dict: whether or not to return the result as a dict indexed by item hash name.
 
     :returns: list of dictionary with item data (name, quantity, id(market_hash_name))
     """
@@ -45,4 +46,4 @@ async def get_user_inventory(steam_user_id, app_id, language = "english"):
         if item_market_hash_hame:
             user_items[item_market_hash_hame]["amount"] += int(api_asset["amount"])
 
-    return list(user_items.values())
+    return user_items if as_dict else list(user_items.values())
