@@ -7,6 +7,7 @@ import pandas as pd
 from datetime import datetime
 from time import time
 from openpyxl import load_workbook
+from openpyxl.styles import Font, Alignment
 
 def set_items_df_column_order(items_df):
     """
@@ -38,6 +39,58 @@ def set_summary_df_column_order(summary_df):
     :returns: new df with the desired column order
     """
     return summary_df[["price_date", "price_total", "api_error"]]
+
+
+def format_workbook(workbook):
+    """
+    Format workboot with sheets for each day and one for summary
+
+    :param workbook: openpyxl workbook
+
+    :returns: nothing
+    """
+    # set column common styles
+    column_font = Font(size = 12, name = "Arial")
+    column_alignment = Alignment(horizontal="center", vertical="center")
+
+    # set summary worksheet column styles
+    # format: ["name", "width", "font", "alignment"]
+    summary_columns = [
+        ["A", 14, column_font, column_alignment],
+        ["B", 14, column_font, column_alignment],
+        ["C", 14, column_font, column_alignment],
+    ]
+
+    # set any date worksheet column styles
+    # format: ["name", "width", "font", "alignment"]
+    date_columns = [
+        ["A", 12, column_font, column_alignment],
+        ["B", 55, column_font, column_alignment],
+        ["C", 15, column_font, column_alignment],
+        ["D", 10, column_font, column_alignment],
+        ["E", 15, column_font, column_alignment],
+        ["F", 11, column_font, column_alignment],
+        ["G", 14, column_font, column_alignment],
+        ["H", 24, column_font, column_alignment],
+        ["I", 55, column_font, column_alignment],
+    ]
+
+    # TODO
+    # header font name and size
+    # price columns formatting
+    for worksheet in workbook.worksheets:
+
+        # set which columns to style
+        columns = summary_columns if worksheet.title == "Summary" else date_columns
+
+        # style columns
+        for name, width, font, alignment in columns:
+            worksheet.column_dimensions[name].font = font
+            worksheet.column_dimensions[name].alignment = alignment
+            worksheet.column_dimensions[name].width = width
+
+        # format header row
+        worksheet.row_dimensions[1] = Font(size = 12, name = "Arial", bold = True)
 
 
 def write_items_to_excel(items, summary, excel_file_name):
@@ -120,4 +173,5 @@ def write_items_to_excel(items, summary, excel_file_name):
     summary_df.to_excel(excel_writer, index=False, sheet_name='Summary')
 
     # persis changes
+    format_workbook(excel_writer.book)
     excel_writer.save()

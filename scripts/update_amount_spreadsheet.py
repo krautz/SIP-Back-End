@@ -2,7 +2,7 @@ import asyncio
 import pandas as pd
 import argparse
 
-from scripts.common import set_summary_df_column_order, set_items_df_column_order
+from scripts.common import set_summary_df_column_order, set_items_df_column_order, format_workbook
 from steamapi.inventory import get_user_inventory
 
 
@@ -87,6 +87,7 @@ async def main(excel_file_name, steam_id):
     summary_df.to_excel(excel_writer, index=False, sheet_name="Summary")
 
     # persis changes
+    format_workbook(excel_writer.book)
     excel_writer.save()
 
 
