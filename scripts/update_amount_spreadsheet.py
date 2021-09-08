@@ -2,7 +2,7 @@ import asyncio
 import pandas as pd
 import argparse
 
-from scripts.common import write_items_to_excel
+from scripts.common import set_summary_df_column_order, set_items_df_column_order
 from steamapi.inventory import get_user_inventory
 
 
@@ -78,10 +78,12 @@ async def main(excel_file_name, steam_id):
         })
 
         # write day's prices to excel exclusive sheet
+        day_df = set_items_df_column_order(day_df)
         day_df.to_excel(excel_writer, index=False, sheet_name=sheet_name)
 
     # write new summary sheet
     summary_df = pd.DataFrame(summaries)
+    summary_df = set_summary_df_column_order(summary_df)
     summary_df.to_excel(excel_writer, index=False, sheet_name="Summary")
 
     # persis changes

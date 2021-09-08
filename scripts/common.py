@@ -8,6 +8,38 @@ from datetime import datetime
 from time import time
 from openpyxl import load_workbook
 
+def set_items_df_column_order(items_df):
+    """
+    Set the desired order of columns to write to an excel spreadsheet on items dataframes
+
+    :param items_df: items dataframe to have its column order set
+
+    :returns: new df with the desired column order
+    """
+    return items_df[[
+        "app_id",
+        "name",
+        "price_unitary",
+        "amount",
+        "price_total",
+        "api_error",
+        "price_date",
+        "price_date_timestamp",
+        "market_hash_name",
+    ]]
+
+
+def set_summary_df_column_order(summary_df):
+    """
+    Set the desired order of columns to write to an excel spreadsheet on summary dataframes
+
+    :param summary_df: summary dataframe to have its column order set
+
+    :returns: new df with the desired column order
+    """
+    return summary_df[["price_date", "price_total", "api_error"]]
+
+
 def write_items_to_excel(items, summary, excel_file_name):
     """
     Write an array of items dict into a dataframe.
@@ -66,6 +98,7 @@ def write_items_to_excel(items, summary, excel_file_name):
     items_today_df = items_today_df.append(today_sum, ignore_index=True)
 
     # write today's prices to excel exclusive sheet
+    items_today_df = set_items_df_column_order(items_today_df)
     items_today_df.to_excel(excel_writer, index=False, sheet_name=today_date)
 
     # add today's summary (update current row date if it exists already)
@@ -83,6 +116,7 @@ def write_items_to_excel(items, summary, excel_file_name):
         summary_df = summary_df.append(today_summary, ignore_index=True)
 
     # write today's prices summary to summary sheet
+    summary_df = set_summary_df_column_order(summary_df)
     summary_df.to_excel(excel_writer, index=False, sheet_name='Summary')
 
     # persis changes
