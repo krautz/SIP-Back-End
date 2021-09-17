@@ -216,3 +216,24 @@ async def add_items_price(
         await _add_items_price_parallel(items, currency, source)
     else:
         print("Invalid items price adder mode")
+
+async def add_item_price(item, currency = CURRENCIES["BRL"], source = "html"):
+    """
+    Proxy the desired way of requesting steam API, in parallel or linearly.
+
+    :param item: item dictionary with app_id and market_hash_name keys.
+    :param currency: currency to retrieve the price.
+    :param source: source to get information from. One of "overview", "history", "html"
+
+    :returns: nothing (set the price in-place on each item dict).
+    """
+    # retrieve item price requester
+    item_price_requeter = ITEM_PRICE_SOURCE_TO_REQUESTER.get(source)
+
+    # obtain each item price in-place and 'in parallel'
+    async with aiohttp.ClientSession() as session:
+        await item_price_requeter(session, item, currency)
+
+        # as per stackoverflow issues, api is limited to 20 requests / minute
+        # using 11 seconds of delay between requests to play safe
+        await asyncio.sleep(11)
