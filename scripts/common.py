@@ -95,8 +95,8 @@ def format_workbook(workbook):
 
 def write_items_to_excel(items, summary, excel_file_name):
     """
-    Write an array of items dict into a dataframe.
-    Also, compute the sum value of all items.
+    Turn an array of item dicts into a spreadsheet (sheet name will be today date).
+    Also, add (or recompute) the summary for today date and right it on summary spreadsheet.
 
     :param items: list of dict containing items
     :param summary: list of dict with prices sum by date
