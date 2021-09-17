@@ -143,7 +143,7 @@ ITEM_PRICE_SOURCE_TO_REQUESTER = {
 ##
 # Function to get price for a batch of items
 ##
-async def _add_items_price_parallel(items, currency = CURRENCIES["BRL"], source = "overview"):
+async def _add_items_price_parallel(items, currency = CURRENCIES["BRL"], source = "html"):
     """
     Request Steam API items last sold price and the date 'in parallel'.
     Add it to item dict in-place.
@@ -156,7 +156,7 @@ async def _add_items_price_parallel(items, currency = CURRENCIES["BRL"], source 
     :returns: nothing (set the price in-place on each item dict).
     """
     # retrieve item price requester
-    item_price_requeter = ITEM_PRICE_SOURCE_TO_REQUESTER.get(source, "overview")
+    item_price_requeter = ITEM_PRICE_SOURCE_TO_REQUESTER.get(source, "html")
 
     # obtain each item price in-place and 'in parallel'
     async with aiohttp.ClientSession() as session:
@@ -168,7 +168,7 @@ async def _add_items_price_parallel(items, currency = CURRENCIES["BRL"], source 
         await asyncio.gather(*tasks)
 
 
-async def _add_items_price_linear(items, currency = CURRENCIES["BRL"], source = "overview"):
+async def _add_items_price_linear(items, currency = CURRENCIES["BRL"], source = "html"):
     """
     Request Steam API items last sold price and the date awaiting 11 second between requests.
     Add it to item dict in-place.
@@ -180,7 +180,7 @@ async def _add_items_price_linear(items, currency = CURRENCIES["BRL"], source = 
     :returns: nothing (set the price in-place on each item dict).
     """
     # retrieve item price requester
-    item_price_requeter = ITEM_PRICE_SOURCE_TO_REQUESTER.get(source, "overview")
+    item_price_requeter = ITEM_PRICE_SOURCE_TO_REQUESTER.get(source, "html")
 
     # obtain each item price in-place and 'in parallel'
     async with aiohttp.ClientSession() as session:
@@ -198,7 +198,7 @@ async def _add_items_price_linear(items, currency = CURRENCIES["BRL"], source = 
 # Exposed function to get price for a batch of items
 ##
 async def add_items_price(
-    items, currency = CURRENCIES["BRL"], source = "overview", mode = "linear"
+    items, currency = CURRENCIES["BRL"], source = "html", mode = "linear"
 ):
     """
     Proxy the desired way of requesting steam API, in parallel or linearly.

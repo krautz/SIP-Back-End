@@ -93,7 +93,7 @@ async def main(excel_file_name, steam_id):
 
 if __name__ == "__main__":
     # creates an argparse object to parse command line option
-    parser = argparse.ArgumentParser(description = "Build spreadsheet with an user's desired items")
+    parser = argparse.ArgumentParser(description = "Update ammount of each user item")
     parser.add_argument(
         "excel_file_name",
         help = "Which file name to use. Do not add extension to it, .xlxs will be used. 'prices' is the default value",
