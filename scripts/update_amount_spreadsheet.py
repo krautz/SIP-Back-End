@@ -35,7 +35,15 @@ async def main(excel_file_name, steam_id):
 
     # set a one column df with the new amount of items
     amount_df = pd.DataFrame({"amount": []})
-    for _, item in any_date_items_df.iterrows():
+    removed_items_idx = []
+    for idx, item in any_date_items_df.iterrows():
+
+        # item not found on user inventory -> mark the item as removed and skip for the next one
+        if not user_items.get(item["market_hash_name"]):
+            removed_items_idx.append(idx)
+            continue
+
+        # item still in user inventory -> update item amount
         amount_df = amount_df.append(
             {"amount": user_items[item["market_hash_name"]]["amount"]},
             ignore_index = True
@@ -60,6 +68,9 @@ async def main(excel_file_name, steam_id):
         summary_row_index = number_of_lines - 1
         summary_row = day_df.iloc[[summary_row_index]]
         day_df = day_df.drop([summary_row_index])
+
+        # drop removed items and update amount
+        day_df = day_df.drop(removed_items_idx)
         day_df["amount"] = amount_df
 
         # update total price
