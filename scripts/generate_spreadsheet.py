@@ -6,14 +6,15 @@ from steamapi.inventory import get_user_inventory
 from steamapi.item_price import add_items_price
 
 
-async def main(steam_id, app_ids, item_names_language, excel_file_name):
+async def main(steam_id, app_ids, item_names_language, sort_by_name, excel_file_name):
     # get user's inventory
     user_items = []
     for app_id in app_ids:
         user_items += await get_user_inventory(steam_id, app_id, item_names_language)
 
     # sort items by name
-    user_items.sort(key = lambda item: item["name"])
+    if sort_by_name:
+        user_items.sort(key = lambda item: item["name"])
 
     # filter out unwanted items
     user_filtered_items = []
@@ -63,6 +64,13 @@ if __name__ == "__main__":
         type = str,
         default = "prices",
     )
+    parser.add_argument(
+        "--sort_by_name",
+        dest = "sort_by_name",
+        help = "Items are sorted by time the got in the inventory. Set this to true to sort by name",
+        type = bool,
+        default = False,
+    )
 
     # waits for command line input
     # (proceeds only if it is validated against the options set before)
@@ -78,5 +86,6 @@ if __name__ == "__main__":
         args.steam_id,
         args.app_ids,
         args.item_names_language,
-        args.excel_file_name + ".xlsx"
+        args.sort_by_name,
+        args.excel_file_name + ".xlsx",
     ))
