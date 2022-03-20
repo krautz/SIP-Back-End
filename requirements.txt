@@ -32,6 +32,8 @@ multidict==5.1.0
     # via
     #   aiohttp
     #   yarl
+mysqlclient==2.1.0
+    # via -r requirements.in
 numpy==1.21.2
     # via pandas
 openpyxl==3.0.7
