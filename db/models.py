@@ -20,6 +20,8 @@ class List(Base):
     created_at = Column(Date, nullable=False)
     updated_at = Column(Date, nullable=False)
 
+    list_items = relationship("ItemList", back_populates="list", cascade="all, delete-orphan")
+
 
 class Item(Base):
     __bind_key__ = "sip"
@@ -31,6 +33,7 @@ class Item(Base):
     name_en = Column(String(length=150), nullable=True)
 
     item_prices = relationship("ItemPrice", back_populates="item", cascade="all, delete-orphan")
+    item_lists = relationship("ItemList", back_populates="item", cascade="all, delete-orphan")
 
 
 class ItemPrice(Base):
@@ -43,3 +46,16 @@ class ItemPrice(Base):
     price_usd = Column(Float, nullable=False)
 
     item = relationship("Item", back_populates="item_prices", uselist=False)
+
+
+class ItemList(Base):
+    __bind_key__ = "sip"
+    __tablename__ = "item_list"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    item_id = Column(String(length=150), ForeignKey("item.market_hash_name"), nullable=False)
+    list_id = Column(Integer, ForeignKey("list.id"), nullable=False)
+    quantity = Column(Integer, nullable=False)
+
+    list = relationship("List", back_populates="list_items", uselist=False)
+    item = relationship("Item", back_populates="item_lists", uselist=False)
