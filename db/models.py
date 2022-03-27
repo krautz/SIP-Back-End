@@ -36,6 +36,16 @@ class Item(Base):
     item_lists = relationship("ItemList", back_populates="item", cascade="all, delete-orphan")
 
 
+    @property
+    def id(self):
+        return self.market_hash_name
+
+
+    @property
+    def name(self):
+        return self.name_en
+
+
 class ItemPrice(Base):
     __bind_key__ = "sip"
     __tablename__ = "item_price"
@@ -46,6 +56,11 @@ class ItemPrice(Base):
     price_usd = Column(Float, nullable=False)
 
     item = relationship("Item", back_populates="item_prices", uselist=False)
+
+
+    @property
+    def price(self):
+        return self.price_usd
 
 
 class ItemList(Base):
