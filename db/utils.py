@@ -3,7 +3,7 @@
 #
 from datetime import date
 from db.metadata import sip_sessionmaker
-from db.models import List, Item
+from db.models import List, Item, ItemList
 
 from sqlalchemy.orm.session import Session as SessionT
 from typing import Optional, List as ListT
@@ -94,3 +94,72 @@ def create_items(
         session.close()
 
     return items
+
+
+def update_list_items(
+    list_id: int,
+    items: ListT[dict],
+    session_external: Optional[SessionT] = None,
+) -> ListT[Item]:
+    """
+    Update list_item for all items provided to the provided list id.
+    Skip items alredy binded to list.
+    Remvoe items on the list but not provided as input.
+    Update items quantity on item already on list but with input amount different from list
+
+    :param list_id: list id which items should be added to
+    :param items: items list of dict to be binded to the provided list id
+        :property id: item id (market_hash_name)
+        :property quantity: amount of item in the list
+    :param session_external: input session. if provided, session is flushed, and not commited
+
+    :returns: all list_item ORM objects
+    """
+    # set session based if external sessions has been provided or not
+    if session_external:
+        session = session_external
+    else:
+        session = sip_sessionmaker()
+
+    # search for existent, updated and removed items from list
+    # NOTE: we could sort items (db and input) and traverse with two pointers
+    #       to make this O(n log(n)) instead of O(n^2)
+    list_items = session.query(ItemList.item_id).filter(ItemList.list_id==list_id)
+    final_db_items = []
+    for list_item in list_items:
+
+        # check if list_item (db) exists in items (input) and check if quantity is updated
+        existent_or_updated_item = False
+        for item in items:
+            if list_item.item_id == item["id"]:
+                if list_item.quantity != item["quantity"]:
+                    # NOTE: quantity will be updated by calling session.commit() call
+                    list_item.quantity = item["quantity"]
+                existent_or_updated_item = True
+                final_db_items.append(list_item)
+                break
+
+        # list_item (db) not found in items (input) -> drop list_item
+        if not existent_or_updated_item:
+            session.delete(list_item)
+
+    # create list items ORM only for new list items
+    existing_list_item_ids = [list_item.item_id for list_item in list_items]
+    for item in items:
+        if item["id"] not in existing_item_ids:
+            list_item = ItemList(
+                list_id=list_id,
+                item_id=item["id"],
+                quantity=item["quantity"],
+            )
+            session.add(list_item)
+            final_db_items.append(list_item)
+
+    # persist changes
+    if session_external:
+        session.flush()
+    else:
+        session.commit()
+        session.close()
+
+    return final_db_items
