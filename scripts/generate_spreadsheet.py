@@ -18,7 +18,7 @@ async def main(steam_id, app_ids, item_names_language, sort_by_name, excel_file_
 
     # filter out unwanted items
     user_filtered_items = []
-    for item in user_items:
+    for item in user_items[:3]:
         add = input(
             f"Would you like to add {item['name']} (app {item['app_id']}) to the spreadsheet?" "(answer with y or n) "
         )

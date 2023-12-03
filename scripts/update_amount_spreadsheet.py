@@ -4,6 +4,7 @@ import argparse
 
 from scripts.common import set_summary_df_column_order, set_items_df_column_order, format_workbook
 from steamapi.inventory import get_user_inventory
+from utils.pandas import append_row_to_df
 
 
 async def main(excel_file_name, steam_id):
@@ -44,10 +45,8 @@ async def main(excel_file_name, steam_id):
             continue
 
         # item still in user inventory -> update item amount
-        amount_df = amount_df.append(
-            {"amount": user_items[item["market_hash_name"]]["amount"]},
-            ignore_index = True
-        )
+        amount_df = append_row_to_df(amount_df, {"amount": user_items[item["market_hash_name"]]["amount"]})
+
     amount_df["amount"] = amount_df["amount"].astype(int)
 
     # get object to write into excel
@@ -79,7 +78,8 @@ async def main(excel_file_name, steam_id):
         # update summary
         summary_row.at[summary_row_index, "amount"] = day_df["amount"].sum()
         summary_row.at[summary_row_index, "price_total"] = day_df["price_total"].sum()
-        day_df = day_df.append(summary_row)
+        print(summary_row)
+        day_df = append_row_to_df(day_df, summary_row)
 
         # add day summary to new summary sheet
         summaries.append({

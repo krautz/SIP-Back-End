@@ -1,6 +1,7 @@
 #
 # Add dependencies here and run pip-compile to generate .txt file
 #
+pip-tools
 aiohttp
 pandas
 openpyxl  # pandas xlsx writer

@@ -8,6 +8,7 @@ from datetime import datetime
 from time import time
 from openpyxl import load_workbook
 from openpyxl.styles import Font, Alignment
+from utils.pandas import append_row_to_df
 
 def set_items_df_column_order(items_df):
     """
@@ -107,28 +108,18 @@ def write_items_to_excel(items, summary, excel_file_name):
     # get today date
     today_date = datetime.utcnow().strftime("%Y-%m-%d")
 
-    # NOTE: Excel Writter must be created AFTER workbook is loaded!
-    #
-    # retrieve existent sheets in excel_file_name
+    # load excel file
     try:
-        excel_book = load_workbook(excel_file_name)
-
-    # error -> no file name in current directory: do nothing
-    except:
-        excel_writer = pd.ExcelWriter(excel_file_name, engine="openpyxl")
-        has_summary_spreadsheet = False
-        print("Excel file name provided not found. Initializing empty one.")
-
-    # success -> keep already present sheets, and remove the ones that will be overwritten
-    else:
-        has_summary_spreadsheet = False
-        if "Summary" in excel_book.sheetnames:
-            has_summary_spreadsheet = True
-            excel_book.remove(excel_book["Summary"])
-        if today_date in excel_book.sheetnames:
-            excel_book.remove(excel_book[today_date])
-        excel_writer = pd.ExcelWriter(excel_file_name, engine="openpyxl")
-        excel_writer.book = excel_book
+        excel_writer = pd.ExcelWriter(excel_file_name, engine="openpyxl", mode="a")
+    except FileNotFoundError:
+        excel_writer = pd.ExcelWriter(excel_file_name, engine="openpyxl", mode="w")
+    excel_workbook = excel_writer.book
+    has_summary_spreadsheet = False
+    if "Summary" in excel_workbook.sheetnames:
+        has_summary_spreadsheet = True
+        excel_workbook.remove(excel_workbook["Summary"])
+    if today_date in excel_workbook.sheetnames:
+        excel_workbook.remove(excel_workbook[today_date])
 
     # set items as a dataframe and compute total price of each iten
     items_today_df = pd.DataFrame(items)
@@ -148,7 +139,7 @@ def write_items_to_excel(items, summary, excel_file_name):
         "price_date_timestamp": int(time()),
         "api_error": "yes" if api_error_amount > 0 else "no"
     }
-    items_today_df = items_today_df.append(today_sum, ignore_index=True)
+    items_today_df = append_row_to_df(items_today_df, today_sum)
 
     # write today's prices to excel exclusive sheet
     items_today_df = set_items_df_column_order(items_today_df)
@@ -166,7 +157,7 @@ def write_items_to_excel(items, summary, excel_file_name):
         summary_df.at[last_summary_line, "api_error"] = today_summary["api_error"]
         summary_df.at[last_summary_line, "price_total"] = today_summary["price_total"]
     else:
-        summary_df = summary_df.append(today_summary, ignore_index=True)
+        summary_df = append_row_to_df(summary_df, today_summary)
 
     # write today's prices summary to summary sheet
     summary_df = set_summary_df_column_order(summary_df)
@@ -174,4 +165,4 @@ def write_items_to_excel(items, summary, excel_file_name):
 
     # persis changes
     format_workbook(excel_writer.book)
-    excel_writer.save()
+    excel_writer.close()
