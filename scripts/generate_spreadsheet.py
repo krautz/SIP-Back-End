@@ -1,7 +1,7 @@
 import argparse
 import asyncio
 
-from scripts.common import write_items_to_excel
+from data_exporters.pandas_excel_exporter import PandasExcelExporter
 from steamapi.inventory import get_user_inventory
 from steamapi.item_price import add_items_price
 
@@ -18,7 +18,7 @@ async def main(steam_id, app_ids, item_names_language, sort_by_name, excel_file_
 
     # filter out unwanted items
     user_filtered_items = []
-    for item in user_items:
+    for item in user_items[:3]:
         add = input(
             f"Would you like to add {item['name']} (app {item['app_id']}) to the spreadsheet?" "(answer with y or n) "
         )
@@ -31,8 +31,9 @@ async def main(steam_id, app_ids, item_names_language, sort_by_name, excel_file_
     # sort items by app id
     user_filtered_items.sort(key=lambda item: item["app_id"])
 
-    # write to xlsx file
-    write_items_to_excel(user_filtered_items, [], excel_file_name)
+    # export data
+    excel_exporter = PandasExcelExporter(excel_file_name)
+    excel_exporter.export_today_items(user_filtered_items)
 
 
 if __name__ == "__main__":

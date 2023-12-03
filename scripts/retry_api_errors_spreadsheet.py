@@ -4,7 +4,7 @@ from datetime import datetime
 
 import pandas as pd
 
-from scripts.common import write_items_to_excel
+from data_exporters.pandas_excel_exporter import PandasExcelExporter
 from steamapi.item_price import add_item_price
 
 
@@ -26,7 +26,6 @@ async def main(excel_file_name):
         return
 
     # read excel needed sheets into dataframes
-    summary_df = excel_file.parse("Summary")
     items_df = excel_file.parse(most_recent_day_sheet)
 
     # remove summary line from items data frame
@@ -35,7 +34,6 @@ async def main(excel_file_name):
 
     # turn the dataframes into list of dictionaries
     items = items_df.to_dict("records")
-    summary = summary_df.to_dict("records")
 
     # retrieve price for items
     for item in items:
@@ -43,8 +41,9 @@ async def main(excel_file_name):
             print(f"Re-requesting data for previous api error for item {item['name']}")
             await add_item_price(item)
 
-    # write to xlsx file
-    write_items_to_excel(items, summary, excel_file_name)
+    # export data
+    excel_exporter = PandasExcelExporter(excel_file_name)
+    excel_exporter.export_today_items(items)
 
 
 if __name__ == "__main__":
