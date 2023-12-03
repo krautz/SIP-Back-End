@@ -1,16 +1,15 @@
-import aiohttp
 import asyncio
 import json
-
 from datetime import datetime
 from time import time
 
+import aiohttp
+
 from steamapi.constants import (
-    BASE_URL,
-    ITEM_PRICE_HISTORY_URL,
-    ITEM_PRICE_OVERVIEW_URL,
-    ITEM_PRICE_MARKET_HMTL_URL,
     CURRENCIES,
+    ITEM_PRICE_HISTORY_URL,
+    ITEM_PRICE_MARKET_HMTL_URL,
+    ITEM_PRICE_OVERVIEW_URL,
 )
 
 
@@ -34,9 +33,9 @@ async def _add_item_price_from_history(session, item, currency):
     """
     # set item price url
     item_price_url = ITEM_PRICE_HISTORY_URL.format(
-        app_id = item["app_id"],
-        market_hash_name = item["market_hash_name"],
-        currency = currency,
+        app_id=item["app_id"],
+        market_hash_name=item["market_hash_name"],
+        currency=currency,
     )
 
     # set item price date and timestamp
@@ -70,9 +69,9 @@ async def _add_item_price_from_overview(session, item, currency):
     """
     # set item price url
     item_price_url = ITEM_PRICE_OVERVIEW_URL.format(
-        app_id = item["app_id"],
-        market_hash_name = item["market_hash_name"],
-        currency = currency,
+        app_id=item["app_id"],
+        market_hash_name=item["market_hash_name"],
+        currency=currency,
     )
 
     # set item price date and timestamp
@@ -92,7 +91,7 @@ async def _add_item_price_from_overview(session, item, currency):
             print(f"Error retrieving price {item['name']} - {item['market_hash_name']}")
 
 
-async def _add_item_price_from_market_html(session, item, currency = None):
+async def _add_item_price_from_market_html(session, item, currency=None):
     """
     Request Steam web market item lsiting.
     There, we can extract the price history from the html.
@@ -108,8 +107,8 @@ async def _add_item_price_from_market_html(session, item, currency = None):
     """
     # set item price url
     item_price_url = ITEM_PRICE_MARKET_HMTL_URL.format(
-        app_id = item["app_id"],
-        market_hash_name = item["market_hash_name"],
+        app_id=item["app_id"],
+        market_hash_name=item["market_hash_name"],
     )
 
     # set item price date and timestamp
@@ -120,10 +119,10 @@ async def _add_item_price_from_market_html(session, item, currency = None):
     async with session.get(item_price_url) as response:
         api_response = await response.text()
         history_start_index = api_response.find("[[")
-        history_end_index = api_response.find("\"]];")
+        history_end_index = api_response.find('"]];')
 
         if history_start_index != -1 and history_end_index != -1:
-            item_price_history = json.loads(api_response[history_start_index:history_end_index+3])
+            item_price_history = json.loads(api_response[history_start_index : history_end_index + 3])
             item["price_unitary"] = item_price_history[-1][1]
             item["api_error"] = "no"
         else:
@@ -143,7 +142,7 @@ ITEM_PRICE_SOURCE_TO_REQUESTER = {
 ##
 # Function to get price for a batch of items
 ##
-async def _add_items_price_parallel(items, currency = CURRENCIES["BRL"], source = "html"):
+async def _add_items_price_parallel(items, currency=CURRENCIES["BRL"], source="html"):
     """
     Request Steam API items last sold price and the date 'in parallel'.
     Add it to item dict in-place.
@@ -162,13 +161,11 @@ async def _add_items_price_parallel(items, currency = CURRENCIES["BRL"], source 
     async with aiohttp.ClientSession() as session:
         tasks = []
         for item in items:
-            tasks.append(
-                asyncio.ensure_future(item_price_requeter(session, item, currency))
-            )
+            tasks.append(asyncio.ensure_future(item_price_requeter(session, item, currency)))
         await asyncio.gather(*tasks)
 
 
-async def _add_items_price_linear(items, currency = CURRENCIES["BRL"], source = "html"):
+async def _add_items_price_linear(items, currency=CURRENCIES["BRL"], source="html"):
     """
     Request Steam API items last sold price and the date awaiting 11 second between requests.
     Add it to item dict in-place.
@@ -197,9 +194,7 @@ async def _add_items_price_linear(items, currency = CURRENCIES["BRL"], source = 
 ##
 # Exposed function to get price for a batch of items
 ##
-async def add_items_price(
-    items, currency = CURRENCIES["BRL"], source = "html", mode = "linear"
-):
+async def add_items_price(items, currency=CURRENCIES["BRL"], source="html", mode="linear"):
     """
     Proxy the desired way of requesting steam API, in parallel or linearly.
 
@@ -217,7 +212,8 @@ async def add_items_price(
     else:
         print("Invalid items price adder mode")
 
-async def add_item_price(item, currency = CURRENCIES["BRL"], source = "html"):
+
+async def add_item_price(item, currency=CURRENCIES["BRL"], source="html"):
     """
     Proxy the desired way of requesting steam API, in parallel or linearly.
 

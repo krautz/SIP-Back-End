@@ -1,9 +1,9 @@
 import aiohttp
-import asyncio
 
-from steamapi.constants import BASE_URL, USER_INVENTOR_URL
+from steamapi.constants import USER_INVENTOR_URL
 
-async def get_user_inventory(steam_user_id, app_id, language = "english", as_dict = False):
+
+async def get_user_inventory(steam_user_id, app_id, language="english", as_dict=False):
     """
     Request Steam API an user's inventory items for a specific app.
 
@@ -15,9 +15,7 @@ async def get_user_inventory(steam_user_id, app_id, language = "english", as_dic
     :returns: list of dictionary with item data (name, quantity, id(market_hash_name))
     """
     # obtain user's inventory
-    user_inventory_url = USER_INVENTOR_URL.format(
-        steam_user_id = steam_user_id, app_id = app_id, language = language
-    )
+    user_inventory_url = USER_INVENTOR_URL.format(steam_user_id=steam_user_id, app_id=app_id, language=language)
     async with aiohttp.ClientSession() as session:
         async with session.get(user_inventory_url) as response:
             user_items_api_response = await response.json()

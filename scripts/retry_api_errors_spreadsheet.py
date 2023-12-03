@@ -1,8 +1,8 @@
-import asyncio
-import pandas as pd
 import argparse
-
+import asyncio
 from datetime import datetime
+
+import pandas as pd
 
 from scripts.common import write_items_to_excel
 from steamapi.item_price import add_item_price
@@ -21,7 +21,7 @@ async def main(excel_file_name):
     if today_date != most_recent_day_sheet:
         print(
             f"ABORTING. Can only check for api errors on current date ({today_date}). ",
-            f"Most recent spreadsheet is from {most_recent_day_sheet}"
+            f"Most recent spreadsheet is from {most_recent_day_sheet}",
         )
         return
 
@@ -34,8 +34,8 @@ async def main(excel_file_name):
     items_df = items_df.drop([number_of_lines - 1])
 
     # turn the dataframes into list of dictionaries
-    items = items_df.to_dict('records')
-    summary = summary_df.to_dict('records')
+    items = items_df.to_dict("records")
+    summary = summary_df.to_dict("records")
 
     # retrieve price for items
     for item in items:
@@ -50,12 +50,12 @@ async def main(excel_file_name):
 if __name__ == "__main__":
     # creates an argparse object to parse command line option
     parser = argparse.ArgumentParser(
-        description = "Retry to get item prices for api error items. This script can only be run if the most recent spreadsheet is from today date"
+        description="Retry to get item prices for api error items. This script can only be run if the most recent spreadsheet is from today date"
     )
     parser.add_argument(
         "excel_file_name",
-        help = "Which file name to use. Do not add extension to it, .xlxs will be used. 'prices' is the default value",
-        type = str,
+        help="Which file name to use. Do not add extension to it, .xlxs will be used. 'prices' is the default value",
+        type=str,
     )
 
     # waits for command line input

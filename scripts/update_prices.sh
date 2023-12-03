@@ -34,7 +34,7 @@ do
     for _ in $(seq 1 $retry_amount)
     do
         python scripts/retry_api_errors_spreadsheet.py $file_split
-    done 
+    done
 done
 
 # exit virutal environment

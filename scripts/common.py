@@ -2,13 +2,14 @@
 Common functionalities between scripts.
 """
 
-import pandas as pd
-
 from datetime import datetime
 from time import time
-from openpyxl import load_workbook
-from openpyxl.styles import Font, Alignment
+
+import pandas as pd
+from openpyxl.styles import Alignment, Font
+
 from utils.pandas import append_row_to_df
+
 
 def set_items_df_column_order(items_df):
     """
@@ -18,17 +19,19 @@ def set_items_df_column_order(items_df):
 
     :returns: new df with the desired column order
     """
-    return items_df[[
-        "app_id",
-        "name",
-        "price_unitary",
-        "amount",
-        "price_total",
-        "api_error",
-        "price_date",
-        "price_date_timestamp",
-        "market_hash_name",
-    ]]
+    return items_df[
+        [
+            "app_id",
+            "name",
+            "price_unitary",
+            "amount",
+            "price_total",
+            "api_error",
+            "price_date",
+            "price_date_timestamp",
+            "market_hash_name",
+        ]
+    ]
 
 
 def set_summary_df_column_order(summary_df):
@@ -51,7 +54,7 @@ def format_workbook(workbook):
     :returns: nothing
     """
     # set column common styles
-    column_font = Font(size = 12, name = "Arial")
+    column_font = Font(size=12, name="Arial")
     column_alignment = Alignment(horizontal="center", vertical="center")
 
     # set summary worksheet column styles
@@ -80,7 +83,6 @@ def format_workbook(workbook):
     # header font name and size
     # price columns formatting
     for worksheet in workbook.worksheets:
-
         # set which columns to style
         columns = summary_columns if worksheet.title == "Summary" else date_columns
 
@@ -91,7 +93,7 @@ def format_workbook(workbook):
             worksheet.column_dimensions[name].width = width
 
         # format header row
-        worksheet.row_dimensions[1] = Font(size = 12, name = "Arial", bold = True)
+        worksheet.row_dimensions[1] = Font(size=12, name="Arial", bold=True)
 
 
 def write_items_to_excel(items, summary, excel_file_name):
@@ -137,7 +139,7 @@ def write_items_to_excel(items, summary, excel_file_name):
         "price_total": today_price_total,
         "price_date": today_date,
         "price_date_timestamp": int(time()),
-        "api_error": "yes" if api_error_amount > 0 else "no"
+        "api_error": "yes" if api_error_amount > 0 else "no",
     }
     items_today_df = append_row_to_df(items_today_df, today_sum)
 
@@ -161,7 +163,7 @@ def write_items_to_excel(items, summary, excel_file_name):
 
     # write today's prices summary to summary sheet
     summary_df = set_summary_df_column_order(summary_df)
-    summary_df.to_excel(excel_writer, index=False, sheet_name='Summary')
+    summary_df.to_excel(excel_writer, index=False, sheet_name="Summary")
 
     # persis changes
     format_workbook(excel_writer.book)

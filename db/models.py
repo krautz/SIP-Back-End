@@ -1,13 +1,14 @@
-from db.metadata import Base
 from sqlalchemy import (
     Column,
-    Integer,
-    String,
     Date,
     Float,
     ForeignKey,
+    Integer,
+    String,
 )
 from sqlalchemy.orm import relationship
+
+from db.metadata import Base
 
 
 class List(Base):
@@ -35,11 +36,9 @@ class Item(Base):
     item_prices = relationship("ItemPrice", back_populates="item", cascade="all, delete-orphan")
     item_lists = relationship("ItemList", back_populates="item", cascade="all, delete-orphan")
 
-
     @property
     def id(self):
         return self.market_hash_name
-
 
     @property
     def name(self):
@@ -56,7 +55,6 @@ class ItemPrice(Base):
     price_usd = Column(Float, nullable=False)
 
     item = relationship("Item", back_populates="item_prices", uselist=False)
-
 
     @property
     def price(self):

@@ -1,6 +1,7 @@
-import asyncio
-import pandas as pd
 import argparse
+import asyncio
+
+import pandas as pd
 
 from scripts.common import write_items_to_excel
 from steamapi.item_price import add_items_price
@@ -19,8 +20,8 @@ async def main(excel_file_name, item_names_language):
     items_df = items_df.drop([number_of_lines - 1])
 
     # turn the dataframes into list of dictionaries
-    items = items_df.to_dict('records')
-    summary = summary_df.to_dict('records')
+    items = items_df.to_dict("records")
+    summary = summary_df.to_dict("records")
 
     # retrieve price for items
     await add_items_price(items)
@@ -28,22 +29,23 @@ async def main(excel_file_name, item_names_language):
     # write to xlsx file
     write_items_to_excel(items, summary, excel_file_name)
 
+
 if __name__ == "__main__":
     # creates an argparse object to parse command line option
     parser = argparse.ArgumentParser(
-        description = "Update today spreadsheet with most up to date prices or add a new spreadsheet if today date does not have it's own spreadsheet yet"
+        description="Update today spreadsheet with most up to date prices or add a new spreadsheet if today date does not have it's own spreadsheet yet"
     )
     parser.add_argument(
         "excel_file_name",
-        help = "Which file name to use. Do not add extension to it, .xlxs will be used. 'prices' is the default value",
-        type = str,
+        help="Which file name to use. Do not add extension to it, .xlxs will be used. 'prices' is the default value",
+        type=str,
     )
     parser.add_argument(
-        '--item_names_language',
-        dest = "item_names_language",
-        help = "Language to display item names ('portuguese' (default), 'english')",
-        type = str,
-        default = "portuguese",
+        "--item_names_language",
+        dest="item_names_language",
+        help="Language to display item names ('portuguese' (default), 'english')",
+        type=str,
+        default="portuguese",
     )
 
     # waits for command line input

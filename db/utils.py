@@ -2,11 +2,14 @@
 # database utils
 #
 from datetime import date
-from db.metadata import sip_sessionmaker
-from db.models import List, Item, ItemList
+from typing import List as ListT
+from typing import Optional
 
 from sqlalchemy.orm.session import Session as SessionT
-from typing import Optional, List as ListT
+
+from db.metadata import sip_sessionmaker
+from db.models import Item, ItemList, List
+
 
 def create_list(
     steam_id: int,
@@ -29,9 +32,7 @@ def create_list(
         session = sip_sessionmaker()
 
     # create list ORM
-    list = List(
-        name=name, steam_id=steam_id, created_at=date.today(), updated_at=date.today()
-    )
+    list = List(name=name, steam_id=steam_id, created_at=date.today(), updated_at=date.today())
     session.add(list)
 
     # persist changes
@@ -67,9 +68,7 @@ def create_items(
 
     # search for existent item names
     item_input_names = [item["market_hash_name"] for item in items_input]
-    existing_items = session.query(Item.market_hash_name).filter(
-        Item.market_hash_name.in_(item_input_names)
-    )
+    existing_items = session.query(Item.market_hash_name).filter(Item.market_hash_name.in_(item_input_names))
     existing_item_names = [item.market_hash_name for item in existing_items]
 
     # create items ORM only for new items
@@ -124,10 +123,9 @@ def update_list_items(
     # search for existent, updated and removed items from list
     # NOTE: we could sort items (db and input) and traverse with two pointers
     #       to make this O(n log(n)) instead of O(n^2)
-    list_items = session.query(ItemList.item_id).filter(ItemList.list_id==list_id)
+    list_items = session.query(ItemList.item_id).filter(ItemList.list_id == list_id)
     final_db_items = []
     for list_item in list_items:
-
         # check if list_item (db) exists in items (input) and check if quantity is updated
         existent_or_updated_item = False
         for item in items:
@@ -144,7 +142,7 @@ def update_list_items(
             session.delete(list_item)
 
     # create list items ORM only for new list items
-    existing_list_item_ids = [list_item.item_id for list_item in list_items]
+    existing_item_ids = [list_item.item_id for list_item in list_items]
     for item in items:
         if item["id"] not in existing_item_ids:
             list_item = ItemList(
