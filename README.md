@@ -15,6 +15,8 @@ Upgrade pip: `pip install --upgrade pip`
 
 Install dependencies: `pip install -r requirements.txt`
 
+Install pre-commit (in case you are developing this project): `pre-commit install --overwrite`
+
 
 # Running Scripts
 

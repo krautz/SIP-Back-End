@@ -1,6 +1,7 @@
 #
 # Add dependencies here and run pip-compile to generate .txt file
 #
+pre-commit
 pip-tools
 aiohttp
 pandas
