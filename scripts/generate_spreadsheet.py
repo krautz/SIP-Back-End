@@ -2,19 +2,19 @@ import argparse
 import asyncio
 
 from data_exporters.pandas_excel_exporter import PandasExcelExporter
-from steamapi.inventory import get_user_inventory
+from external_apis.steam.inventory import SteamInventoryAPI
 from steamapi.item_price import add_items_price
 
 
-async def main(steam_id, app_ids, item_names_language, sort_by_name, excel_file_name):
+async def main(steam_id: int, app_ids: list[int], item_names_language: str, excel_file_name: str):
     # get user's inventory
+    steam_inventory_api = SteamInventoryAPI()
     user_items = []
-    for app_id in app_ids:
-        user_items += await get_user_inventory(steam_id, app_id, item_names_language)
-
-    # sort items by name
-    if sort_by_name:
-        user_items.sort(key=lambda item: item["name"])
+    sorted_app_ids = sorted(app_ids)
+    for app_id in sorted_app_ids:
+        app_items = await steam_inventory_api.get_user_app_items(steam_id, app_id, item_names_language)
+        app_items_sorted = sorted(app_items, key=lambda item: item["name"])
+        user_items.extend(app_items_sorted)
 
     # filter out unwanted items
     user_filtered_items = []
@@ -27,9 +27,6 @@ async def main(steam_id, app_ids, item_names_language, sort_by_name, excel_file_
 
     # retrieve price for filtered items
     await add_items_price(user_filtered_items)
-
-    # sort items by app id
-    user_filtered_items.sort(key=lambda item: item["app_id"])
 
     # export data
     excel_exporter = PandasExcelExporter(excel_file_name)
@@ -66,13 +63,6 @@ if __name__ == "__main__":
         type=str,
         default="prices",
     )
-    parser.add_argument(
-        "--sort_by_name",
-        dest="sort_by_name",
-        help="Items are sorted by time the got in the inventory. Set this to true to sort by name",
-        type=bool,
-        default=False,
-    )
 
     # waits for command line input
     # (proceeds only if it is validated against the options set before)
@@ -89,7 +79,6 @@ if __name__ == "__main__":
             args.steam_id,
             args.app_ids,
             args.item_names_language,
-            args.sort_by_name,
             args.excel_file_name + ".xlsx",
         )
     )
