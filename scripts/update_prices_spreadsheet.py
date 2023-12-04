@@ -1,25 +1,15 @@
 import argparse
 import asyncio
 
-import pandas as pd
-
 from data_exporters.pandas_excel_exporter import PandasExcelExporter
+from data_readers.excel_reader import ExcelReader
 from steamapi.item_price import add_items_price
 
 
 async def main(excel_file_name, item_names_language):
-    # get items and summary as dataframes
-    excel_file = pd.ExcelFile(excel_file_name)
-    summary_sheet_index = excel_file.sheet_names.index("Summary")
-    any_date_sheet = excel_file.sheet_names[summary_sheet_index - 1]
-    items_df = excel_file.parse(any_date_sheet)
-
-    # remove summary line from items data frame
-    number_of_lines = items_df.shape[0]
-    items_df = items_df.drop([number_of_lines - 1])
-
-    # turn the dataframes into list of dictionaries
-    items = items_df.to_dict("records")
+    # get list of items
+    excel_reader = ExcelReader(excel_file_name)
+    items = excel_reader.get_items()
 
     # retrieve price for items
     await add_items_price(items)

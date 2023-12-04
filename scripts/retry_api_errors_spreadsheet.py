@@ -2,38 +2,25 @@ import argparse
 import asyncio
 from datetime import datetime
 
-import pandas as pd
-
 from data_exporters.pandas_excel_exporter import PandasExcelExporter
+from data_readers.excel_reader import ExcelReader
 from steamapi.item_price import add_item_price
 
 
 async def main(excel_file_name):
-    # get latest day spreadsheet name
-    excel_file = pd.ExcelFile(excel_file_name)
-    excel_file.sheet_names.sort()
-    most_recent_day_sheet = excel_file.sheet_names[-2]
-
-    # get today date
+    # check if we can get prices for most recent sheet
+    excel_reader = ExcelReader(excel_file_name)
+    most_recent_sheet = excel_reader.get_most_recent_date_sheet_name()
     today_date = datetime.utcnow().strftime("%Y-%m-%d")
-
-    # most recent sheet is not from today -> abort
-    if today_date != most_recent_day_sheet:
+    if most_recent_sheet != today_date:
         print(
             f"ABORTING. Can only check for api errors on current date ({today_date}). ",
-            f"Most recent spreadsheet is from {most_recent_day_sheet}",
+            f"Most recent sheet is from {most_recent_sheet}",
         )
         return
 
-    # read excel needed sheets into dataframes
-    items_df = excel_file.parse(most_recent_day_sheet)
-
-    # remove summary line from items data frame
-    number_of_lines = items_df.shape[0]
-    items_df = items_df.drop([number_of_lines - 1])
-
-    # turn the dataframes into list of dictionaries
-    items = items_df.to_dict("records")
+    # get items
+    items = excel_reader.get_items()
 
     # retrieve price for items
     for item in items:
