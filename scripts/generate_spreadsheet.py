@@ -2,16 +2,15 @@ import argparse
 import asyncio
 
 from data_exporters.pandas_excel_exporter import PandasExcelExporter
-from external_apis.steam.inventory import SteamInventoryAPI
-from external_apis.steam.items import SteamItemsAPI
+from external_apis.steam.api import SteamAPI
 
 
 async def main(steam_id: int, app_ids: list[int], item_names_language: str, excel_file_name: str):
     # get user's inventory
-    steam_inventory_api = SteamInventoryAPI()
+    steam_api = SteamAPI()
     user_items = []
     for app_id in app_ids:
-        app_items = await steam_inventory_api.get_user_app_items(steam_id, app_id, item_names_language)
+        app_items = await steam_api.inventory.get_user_app_items(steam_id, app_id, item_names_language)
         user_items.extend(app_items)
     sorted(user_items, key=lambda item: f"{item['app_id']}-{item['name']}")
 
@@ -25,8 +24,7 @@ async def main(steam_id: int, app_ids: list[int], item_names_language: str, exce
             user_filtered_items.append(item)
 
     # retrieve price for filtered items
-    steam_items_api = SteamItemsAPI()
-    user_filtered_items_with_price = await steam_items_api.add_items_price(user_filtered_items)
+    user_filtered_items_with_price = await steam_api.items.add_items_price(user_filtered_items)
 
     # export data
     excel_exporter = PandasExcelExporter(excel_file_name)

@@ -17,8 +17,8 @@ from external_apis.steam.exceptions import SteamItemsAPIException
 
 
 class SteamItemsAPI:
-    def __init__(self):
-        self.session = AsyncClient()
+    def __init__(self, session: AsyncClient | None = None):
+        self.session = session or AsyncClient()
 
     async def _get_price_from_history(self, item: dict, currency: str) -> float:
         """

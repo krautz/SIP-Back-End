@@ -5,7 +5,7 @@ import pandas as pd
 
 # replace with data exporter class
 # from scripts.common import format_workbook, set_items_df_column_order, set_summary_df_column_order
-from external_apis.steam.inventory import SteamInventoryAPI
+from external_apis.steam.api import SteamAPI
 
 
 async def main(excel_file_name, steam_id):
@@ -27,10 +27,10 @@ async def main(excel_file_name, steam_id):
     app_ids = list(filter(lambda app_id: isinstance(app_id, int), app_ids))
 
     # get user's inventory for app ids present on spreadsheet
-    steam_inventory_api = SteamInventoryAPI()
+    steam_api = SteamAPI()
     user_items = {}
     for app_id in app_ids:
-        user_items.update(await steam_inventory_api.get_user_app_indexed_items(steam_id, app_id))
+        user_items.update(await steam_api.inventory.get_user_app_indexed_items(steam_id, app_id))
 
     # remove summary line from items data frame
     number_of_lines = any_date_items_df.shape[0]
