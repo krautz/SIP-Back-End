@@ -4,7 +4,6 @@
 pre-commit
 pip-tools
 httpx
-aiohttp
 pandas
 openpyxl  # pandas xlsx writer
 alembic
