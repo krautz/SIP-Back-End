@@ -1,5 +1,6 @@
 import asyncio
 import json
+import re
 from copy import deepcopy
 from datetime import datetime
 from time import time
@@ -90,11 +91,9 @@ class SteamItemsAPI:
 
         # request item price
         response = await self.session.get(url)
-        html = response.text
-        history_start_index = html.find("[[")
-        history_end_index = html.find('"]];')
-        if history_start_index != -1 and history_end_index != -1:
-            item_price_history = json.loads(html[history_start_index : history_end_index + 3])
+        match = re.search(r"var line1=(.*?);", response.text)
+        if match:
+            item_price_history = json.loads(match.group(1))
             return item_price_history[-1][1]
         raise SteamItemsAPIException(item["name"], item["market_hash_name"], response.status_code)
 
