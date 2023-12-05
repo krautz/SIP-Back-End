@@ -3,7 +3,8 @@ from time import time
 
 import pandas as pd
 from openpyxl import Workbook
-from openpyxl.styles import Alignment, Font
+
+from data_exporters.workbook_stylish import WorkbookStylish
 
 
 class PandasExcelExporter:
@@ -13,9 +14,7 @@ class PandasExcelExporter:
         self.today_date = datetime.utcnow().strftime("%Y-%m-%d")
         self.excel_writer: pd.ExcelWriter = self._create_writter()
         self.workbook: Workbook = self._get_workbook()
-        self.header_row_font = Font(size=12, name="Arial", bold=True)
-        self.column_font = Font(size=12, name="Arial")
-        self.column_alignment = Alignment(horizontal="center", vertical="center")
+        self.workbook_stylish = WorkbookStylish(self.workbook)
 
     def _create_writter(self) -> pd.ExcelWriter:
         """
@@ -65,69 +64,6 @@ class PandasExcelExporter:
         if sheet_name in self.workbook.sheetnames:
             worksheet = self.workbook.get_sheet_by_name(sheet_name)
             self.workbook.remove(worksheet)
-
-    def _format_items_worksheets(self):
-        """
-        Format items worksheets
-
-        :returns: nothing
-        """
-        # set column styles
-        # format: ["name", "width", "font", "alignment"]
-        columns_style = [
-            ["A", 12, self.column_font, self.column_alignment],
-            ["B", 55, self.column_font, self.column_alignment],
-            ["C", 15, self.column_font, self.column_alignment],
-            ["D", 10, self.column_font, self.column_alignment],
-            ["E", 15, self.column_font, self.column_alignment],
-            ["F", 11, self.column_font, self.column_alignment],
-            ["G", 14, self.column_font, self.column_alignment],
-            ["H", 24, self.column_font, self.column_alignment],
-            ["I", 55, self.column_font, self.column_alignment],
-        ]
-
-        # update each date worksheet
-        for worksheet in self.workbook.worksheets:
-            # skip summary sheet
-            if worksheet.title == "Summary":
-                continue
-
-            # format date worksheet
-            for name, width, font, alignment in columns_style:
-                worksheet.column_dimensions[name].font = font
-                worksheet.column_dimensions[name].alignment = alignment
-                worksheet.column_dimensions[name].width = width
-
-            # overwrite header row style
-            worksheet.row_dimensions[1] = self.header_row_font
-
-    def _format_summary_worksheet(self):
-        """
-        Format summary worksheets
-
-        :returns: nothing
-        """
-        # format: ["name", "width", "font", "alignment"]
-        columns_style = [
-            ["A", 14, self.column_font, self.column_alignment],
-            ["B", 14, self.column_font, self.column_alignment],
-            ["C", 14, self.column_font, self.column_alignment],
-        ]
-        summary_worksheet = self.workbook.get_sheet_by_name("Summary")
-        for name, width, font, alignment in columns_style:
-            summary_worksheet.column_dimensions[name].font = font
-            summary_worksheet.column_dimensions[name].alignment = alignment
-            summary_worksheet.column_dimensions[name].width = width
-        summary_worksheet.row_dimensions[1] = self.header_row_font
-
-    def _format_workbook(self):
-        """
-        Formats the workbook
-
-        :returns: nothing
-        """
-        self._format_items_worksheets()
-        self._format_summary_worksheet()
 
     def _format_items_today_df_column_order(self, items_today_df: pd.DataFrame) -> pd.DataFrame:
         """
@@ -245,5 +181,5 @@ class PandasExcelExporter:
         # add new sheets
         items_today_df.to_excel(self.excel_writer, index=False, sheet_name=self.today_date)
         summary_df.to_excel(self.excel_writer, index=False, sheet_name="Summary")
-        self._format_workbook()
+        self.workbook_stylish.style_workbook()
         self.excel_writer.close()
