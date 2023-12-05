@@ -6,7 +6,7 @@ from data_readers.excel_reader import ExcelReader
 from external_apis.steam.api import SteamAPI
 
 
-async def main(excel_file_name, item_names_language):
+async def main(excel_file_name: str):
     # get list of items
     excel_reader = ExcelReader(excel_file_name)
     items = excel_reader.get_items()
@@ -30,22 +30,10 @@ if __name__ == "__main__":
         help="Which file name to use. Do not add extension to it, .xlxs will be used. 'prices' is the default value",
         type=str,
     )
-    parser.add_argument(
-        "--item_names_language",
-        dest="item_names_language",
-        help="Language to display item names ('portuguese' (default), 'english')",
-        type=str,
-        default="portuguese",
-    )
 
     # waits for command line input
     # (proceeds only if it is validated against the options set before)
     args = parser.parse_args()
 
-    # validate provided input
-    if args.item_names_language not in ["english", "portuguese"]:
-        print("Invalid chosen language, choose either 'english' or 'portuguese'")
-        exit()
-
     # start async loop
-    asyncio.run(main(args.excel_file_name + ".xlsx", args.item_names_language))
+    asyncio.run(main(args.excel_file_name + ".xlsx"))

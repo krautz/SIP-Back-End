@@ -7,7 +7,7 @@ from data_readers.excel_reader import ExcelReader
 from external_apis.steam.api import SteamAPI
 
 
-async def main(excel_file_name):
+async def main(excel_file_name: str):
     # check if we can get prices for most recent sheet
     excel_reader = ExcelReader(excel_file_name)
     most_recent_sheet = excel_reader.get_most_recent_date_sheet_name()
