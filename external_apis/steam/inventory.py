@@ -2,7 +2,7 @@ from copy import deepcopy
 
 from httpx import AsyncClient
 
-from steamapi.constants import USER_INVENTOR_URL
+from external_apis.steam.constants import USER_INVENTOR_URL
 
 
 class SteamInventoryAPI:

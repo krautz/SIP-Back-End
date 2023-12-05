@@ -4,7 +4,7 @@ from datetime import datetime
 
 from data_exporters.pandas_excel_exporter import PandasExcelExporter
 from data_readers.excel_reader import ExcelReader
-from steamapi.item_price import add_item_price
+from external_apis.steam.items import SteamItemsAPI
 
 
 async def main(excel_file_name):
@@ -19,18 +19,22 @@ async def main(excel_file_name):
         )
         return
 
-    # get items
+    # get items with errors
     items = excel_reader.get_items()
+    items_with_api_error = [item for item in items if item["api_error"] == "yes"]
 
-    # retrieve price for items
-    for item in items:
-        if item["api_error"] == "yes":
-            print(f"Re-requesting data for previous api error for item {item['name']}")
-            await add_item_price(item)
+    # retrieve price for items with error
+    steam_items_api = SteamItemsAPI()
+    items_with_api_error_with_price = await steam_items_api.add_items_price(items_with_api_error)
+
+    # reconciliate items
+    items_without_error = [item for item in items if item["api_error"] == "no"]
+    updated_items = items_without_error + items_with_api_error_with_price
+    updated_items_sorted = sorted(updated_items, key=lambda item: f"{item['app_id']}-{item['name']}")
 
     # export data
     excel_exporter = PandasExcelExporter(excel_file_name)
-    excel_exporter.export_today_items(items)
+    excel_exporter.export_today_items(updated_items_sorted)
 
 
 if __name__ == "__main__":

@@ -3,7 +3,7 @@ import asyncio
 
 from data_exporters.pandas_excel_exporter import PandasExcelExporter
 from data_readers.excel_reader import ExcelReader
-from steamapi.item_price import add_items_price
+from external_apis.steam.items import SteamItemsAPI
 
 
 async def main(excel_file_name, item_names_language):
@@ -12,11 +12,12 @@ async def main(excel_file_name, item_names_language):
     items = excel_reader.get_items()
 
     # retrieve price for items
-    await add_items_price(items)
+    steam_items_api = SteamItemsAPI()
+    items_with_price = await steam_items_api.add_items_price(items)
 
     # export data
     excel_exporter = PandasExcelExporter(excel_file_name)
-    excel_exporter.export_today_items(items)
+    excel_exporter.export_today_items(items_with_price)
 
 
 if __name__ == "__main__":
