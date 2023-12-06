@@ -3,22 +3,23 @@ import asyncio
 
 from data_exporters.pandas_excel_exporter import PandasExcelExporter
 from external_apis.steam.api import SteamAPI
+from models.items import Item
 
 
 async def main(steam_id: int, app_ids: list[int], item_names_language: str, excel_file_name: str):
     # get user's inventory
     steam_api = SteamAPI()
-    user_items = []
+    user_items: list[Item] = []
     for app_id in app_ids:
         app_items = await steam_api.inventory.get_user_app_items(steam_id, app_id, item_names_language)
         user_items.extend(app_items)
-    sorted(user_items, key=lambda item: f"{item['app_id']}-{item['name']}")
+    sorted(user_items, key=lambda item: f"{item.app_id}-{item.name}")
 
     # filter out unwanted items
-    user_filtered_items = []
-    for item in user_items:
+    user_filtered_items: list[Item] = []
+    for item in user_items[:3]:
         add = input(
-            f"Would you like to add {item['name']} (app {item['app_id']}) to the spreadsheet?" "(answer with y or n) "
+            f"Would you like to add {item.name} (app {item.app_id}) to the spreadsheet?" "(answer with y or n) "
         )
         if add == "y":
             user_filtered_items.append(item)

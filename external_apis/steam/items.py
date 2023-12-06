@@ -1,7 +1,6 @@
 import asyncio
 import json
 import re
-from copy import deepcopy
 from datetime import datetime
 from time import time
 from typing import Callable
@@ -15,13 +14,14 @@ from external_apis.steam.constants import (
     ITEM_PRICE_OVERVIEW_URL,
 )
 from external_apis.steam.exceptions import SteamItemsAPIException
+from models.items import AnyItem, ItemWithPrice
 
 
 class SteamItemsAPI:
     def __init__(self, session: AsyncClient | None = None):
         self.session = session or AsyncClient()
 
-    async def _get_price_from_history(self, item: dict, currency: str) -> float:
+    async def _get_price_from_history(self, item: AnyItem, currency: str) -> float:
         """
         Request Steam API item price through history API.
         This API provides the median sold value of each day for old days and median sold value per hour
@@ -37,8 +37,8 @@ class SteamItemsAPI:
         """
         # set item price url
         url = ITEM_PRICE_HISTORY_URL.format(
-            app_id=item["app_id"],
-            market_hash_name=item["market_hash_name"],
+            app_id=item.app_id,
+            market_hash_name=item.market_hash_name,
             currency=currency,
         )
 
@@ -47,9 +47,9 @@ class SteamItemsAPI:
         response_data: dict = response.json()
         if response_data and response_data.get("success"):
             return response_data["prices"][-1][1]
-        raise SteamItemsAPIException(item["name"], item["market_hash_name"], response.status_code)
+        raise SteamItemsAPIException(item.name, item.market_hash_name, response.status_code)
 
-    async def _get_price_from_overview(self, item: dict, currency: str) -> float:
+    async def _get_price_from_overview(self, item: AnyItem, currency: str) -> float:
         """
         Request Steam API item last sold lowest price through overview API.
 
@@ -62,8 +62,8 @@ class SteamItemsAPI:
         """
         # set item price url
         url = ITEM_PRICE_OVERVIEW_URL.format(
-            app_id=item["app_id"],
-            market_hash_name=item["market_hash_name"],
+            app_id=item.app_id,
+            market_hash_name=item.market_hash_name,
             currency=currency,
         )
 
@@ -72,9 +72,9 @@ class SteamItemsAPI:
         response_data: dict = response.json()
         if response_data and response_data.get("success"):
             return float(response_data["median_price"].split()[1])
-        raise SteamItemsAPIException(item["name"], item["market_hash_name"], response.status_code)
+        raise SteamItemsAPIException(item.name, item.market_hash_name, response.status_code)
 
-    async def _get_price_from_market_html(self, item: dict, **kwargs) -> float:
+    async def _get_price_from_market_html(self, item: AnyItem, **kwargs) -> float:
         """
         Request Steam web market item listing.
         There, we can extract the price history from the html.
@@ -85,8 +85,8 @@ class SteamItemsAPI:
         """
         # set item price url
         url = ITEM_PRICE_MARKET_HMTL_URL.format(
-            app_id=item["app_id"],
-            market_hash_name=item["market_hash_name"],
+            app_id=item.app_id,
+            market_hash_name=item.market_hash_name,
         )
 
         # request item price
@@ -95,7 +95,7 @@ class SteamItemsAPI:
         if match:
             item_price_history = json.loads(match.group(1))
             return item_price_history[-1][1]
-        raise SteamItemsAPIException(item["name"], item["market_hash_name"], response.status_code)
+        raise SteamItemsAPIException(item.name, item.market_hash_name, response.status_code)
 
     def get_item_price_getter(self, price_source: str) -> Callable[[dict, str], float]:
         """
@@ -112,7 +112,9 @@ class SteamItemsAPI:
         }
         return price_source_to_item_price_getter[price_source]
 
-    async def add_price_to_item(self, item: dict, currency: str | None = None, price_source: str = "html") -> dict:
+    async def add_price_to_item(
+        self, item: AnyItem, currency: str | None = None, price_source: str = "html"
+    ) -> ItemWithPrice:
         """
         Get an item's price and returns an updated item dict with price info
 
@@ -122,7 +124,6 @@ class SteamItemsAPI:
 
         :returns: item dict with new price properties
         """
-        item_with_price = deepcopy(item)
         price_getter = self.get_item_price_getter(price_source)
         price_date = datetime.utcnow().strftime("%Y-%m-%d")
         price_timestamp = int(time())
@@ -131,19 +132,21 @@ class SteamItemsAPI:
             price = await price_getter(item=item, currency=currency)
         except SteamItemsAPIException as exc:
             exc.log()
-        item_with_price.update(
-            {
-                "price_date": price_date,
-                "price_date_timestamp": price_timestamp,
-                "price_unitary": price,
-                "api_error": "yes" if price is None else "no",
-            }
+        item_with_price = ItemWithPrice(
+            app_id=item.app_id,
+            name=item.name,
+            amount=item.amount,
+            market_hash_name=item.market_hash_name,
+            price_date=price_date,
+            price_date_timestamp=price_timestamp,
+            price_unitary=price,
+            api_error="yes" if price is None else "no",
         )
         return item_with_price
 
     async def _add_items_price_concurrently(
-        self, items: list[dict], currency: str = CURRENCIES["BRL"], price_source: str = "html"
-    ) -> list[dict]:
+        self, items: list[AnyItem], currency: str = CURRENCIES["BRL"], price_source: str = "html"
+    ) -> list[ItemWithPrice]:
         """
         Request Steam API items last sold price and the date concurrently.
 
@@ -159,8 +162,8 @@ class SteamItemsAPI:
         return await asyncio.gather(*tasks)
 
     async def _add_items_price_serialized(
-        self, items: list[dict], currency: str = CURRENCIES["BRL"], price_source: str = "html"
-    ) -> list[dict]:
+        self, items: list[AnyItem], currency: str = CURRENCIES["BRL"], price_source: str = "html"
+    ) -> list[ItemWithPrice]:
         """
         Request Steam API items last sold price and the date awaiting 11 second between requests.
         As per stackoverflow issues, api is limited to 20 requests / minute
@@ -183,11 +186,11 @@ class SteamItemsAPI:
 
     async def add_items_price(
         self,
-        items: list[dict],
+        items: list[AnyItem],
         currency: str = CURRENCIES["BRL"],
         price_source: str = "html",
         retrieve_mode: str = "serialized",
-    ) -> list[dict]:
+    ) -> list[ItemWithPrice]:
         """
         Proxy the desired way of requesting steam API, concurrently or serialized.
 

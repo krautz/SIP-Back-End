@@ -5,6 +5,8 @@ import pandas as pd
 from openpyxl import Workbook
 
 from data_exporters.workbook_stylish import WorkbookStylish
+from models.items import ItemWithPrice
+from models.utils import convert_model_to_list
 
 
 class PandasExcelExporter:
@@ -147,7 +149,7 @@ class PandasExcelExporter:
         new_row = pd.DataFrame([data])
         return pd.concat([df, new_row], ignore_index=True)
 
-    def export_today_items(self, items_today: list[dict]):
+    def export_today_items(self, items_today: list[ItemWithPrice]):
         """
         Add provided items to today's sheet
         Also, add today to summary sheet
@@ -157,7 +159,8 @@ class PandasExcelExporter:
         :returns: nothing
         """
         # set items as a dataframe and compute total price of each iten
-        items_today_df = pd.DataFrame(items_today)
+        items_today_list = convert_model_to_list(items_today)
+        items_today_df = pd.DataFrame(items_today_list)
         items_today_df["price_total"] = items_today_df["price_unitary"] * items_today_df["amount"]
 
         # add today's prices sum to dataframe

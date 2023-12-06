@@ -3,23 +3,27 @@ from copy import deepcopy
 from httpx import AsyncClient
 
 from external_apis.steam.constants import USER_INVENTOR_URL
+from external_apis.steam.models import Inventory, InventoryAsset, InventoryDescription
+from models.items import Item
 
 
 class SteamInventoryAPI:
     def __init__(self, session: AsyncClient | None = None):
         self.session = session or AsyncClient()
 
-    def _filter_marketable_items(self, user_items_description: list[dict]) -> list[dict]:
+    def _filter_marketable_items(
+        self, inventory_descriptions: list[InventoryDescription]
+    ) -> list[InventoryDescription]:
         """
         Filter user items to include only the ones that are marketable
 
-        :param user_items_description: user api items description from an app
+        :param inventory_descriptions: user api inventory description from an app
 
         :returns: marketable items
         """
-        return list(filter(lambda item: item["marketable"] == 1, user_items_description))
+        return list(filter(lambda item: item.marketable == 1, inventory_descriptions))
 
-    def _format_marketable_items(self, marketable_items: list[dict]) -> dict[str, dict]:
+    def _format_marketable_items(self, marketable_items: list[InventoryDescription]) -> dict[str, Item]:
         """
         Format marketable items to include only needed properties
 
@@ -27,18 +31,17 @@ class SteamInventoryAPI:
 
         :returns: formatted items with only needed properties
         """
-        formatted_items: dict[str, dict] = {}
+        formatted_items: dict[str, Item] = {}
         for item in marketable_items:
-            item_market_hash_name = item["market_hash_name"]
-            formatted_items[item_market_hash_name] = {
-                "amount": 0,  # amount is present on api response assets. just initializing it.
-                "app_id": item["appid"],  # game code that has the item
-                "market_hash_name": item_market_hash_name,  # item 'id' to requst price later
-                "name": item["market_name"],  # item human friendly name
-            }
+            formatted_items[item.market_hash_name] = Item(
+                amount=0,  # amount is present on api response assets. just initializing it.
+                app_id=item.app_id,  # game code that has the item
+                market_hash_name=item.market_hash_name,  # item 'id' to requst price later
+                name=item.market_name,  # item human friendly name
+            )
         return formatted_items
 
-    def _map_item_class_id_to_market_hash_name(self, user_items: list[dict]) -> dict[str, str]:
+    def _map_item_class_id_to_market_hash_name(self, marketable_items: list[InventoryDescription]) -> dict[str, str]:
         """
         Build a map of user items class id to market hash name
 
@@ -47,33 +50,35 @@ class SteamInventoryAPI:
         :returns: formatted items with only needed properties
         """
         class_id_to_market_hash_name: dict[str, str] = {
-            item["classid"]: item["market_hash_name"] for item in user_items
+            item.class_id: item.market_hash_name for item in marketable_items
         }
         return class_id_to_market_hash_name
 
     def _compute_items_amount(
-        self, items: dict[str, dict], user_items_asset: list[dict], item_class_id_to_market_hash_name: dict[str, str]
-    ) -> dict[str, dict]:
+        self,
+        items: dict[str, Item],
+        inventory_assets: list[InventoryAsset],
+        item_class_id_to_market_hash_name: dict[str, str],
+    ) -> dict[str, Item]:
         """
         Compute each item amount
 
         :param items: formatted items
-        :param user_items_asset: user api items asset from an app
+        :param inventory_assets: user api items asset from an app
         :param item_class_id_to_market_hash_name: mapper of class_id to market_hash_name
 
         :returns: items with amount
         """
         items_with_amount = deepcopy(items)
-        for item_asset in user_items_asset:
-            item_asset_class_id = item_asset["classid"]
-            market_hash_hame = item_class_id_to_market_hash_name.get(item_asset_class_id)
+        for inventory_asset in inventory_assets:
+            market_hash_hame = item_class_id_to_market_hash_name.get(inventory_asset.class_id)
             if market_hash_hame:
-                items_with_amount[market_hash_hame]["amount"] += int(item_asset["amount"])
+                items_with_amount[market_hash_hame].amount += int(inventory_asset.amount)
         return items_with_amount
 
     async def get_user_app_indexed_items(
         self, steam_user_id: int, app_id: int, language: str = "english"
-    ) -> dict[str, dict]:
+    ) -> dict[str, Item]:
         """
         Get all user's marketable items for a given app indexed by its hash name
 
@@ -87,19 +92,19 @@ class SteamInventoryAPI:
         url = USER_INVENTOR_URL.format(steam_user_id=steam_user_id, app_id=app_id, language=language)
         response = await self.session.get(url)
         assert response.status_code == 200
-        user_app_items: list[dict] = response.json()
+        user_inventory = Inventory.model_validate(response.json())
 
         # format items
-        marketable_items = self._filter_marketable_items(user_app_items["descriptions"])
+        marketable_items = self._filter_marketable_items(user_inventory.descriptions)
         item_class_id_to_market_hash_name = self._map_item_class_id_to_market_hash_name(marketable_items)
         formatted_marketable_items = self._format_marketable_items(marketable_items)
         items_with_amount = self._compute_items_amount(
-            formatted_marketable_items, user_app_items["assets"], item_class_id_to_market_hash_name
+            formatted_marketable_items, user_inventory.assets, item_class_id_to_market_hash_name
         )
 
         return items_with_amount
 
-    async def get_user_app_items(self, steam_user_id: int, app_id: int, language: str = "english") -> list[dict]:
+    async def get_user_app_items(self, steam_user_id: int, app_id: int, language: str = "english") -> list[Item]:
         """
         Get all user's marketable items for a given app
 

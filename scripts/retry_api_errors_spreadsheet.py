@@ -21,16 +21,16 @@ async def main(excel_file_name: str):
 
     # get items with errors
     items = excel_reader.get_items()
-    items_with_api_error = [item for item in items if item["api_error"] == "yes"]
+    items_with_api_error = [item for item in items if item.api_error == "yes"]
 
     # retrieve price for items with error
     steam_api = SteamAPI()
     items_with_api_error_with_price = await steam_api.items.add_items_price(items_with_api_error)
 
     # reconciliate items
-    items_without_error = [item for item in items if item["api_error"] == "no"]
+    items_without_error = [item for item in items if item.api_error == "no"]
     updated_items = items_without_error + items_with_api_error_with_price
-    updated_items_sorted = sorted(updated_items, key=lambda item: f"{item['app_id']}-{item['name']}")
+    updated_items_sorted = sorted(updated_items, key=lambda item: f"{item.app_id}-{item.name}")
 
     # export data
     excel_exporter = PandasExcelExporter(excel_file_name)
