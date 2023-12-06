@@ -6,5 +6,6 @@ pip-tools
 httpx
 pandas
 openpyxl  # pandas xlsx writer
+pydantic
 alembic
 mysqlclient

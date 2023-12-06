@@ -6,6 +6,8 @@
 #
 alembic==1.13.0
     # via -r requirements.in
+annotated-types==0.6.0
+    # via pydantic
 anyio==4.1.0
     # via httpx
 build==1.0.3
@@ -62,6 +64,10 @@ platformdirs==4.0.0
     # via virtualenv
 pre-commit==3.5.0
     # via -r requirements.in
+pydantic==2.5.2
+    # via -r requirements.in
+pydantic-core==2.14.5
+    # via pydantic
 pyproject-hooks==1.0.0
     # via build
 python-dateutil==2.8.2
@@ -86,6 +92,8 @@ tomli==2.0.1
 typing-extensions==4.8.0
     # via
     #   alembic
+    #   pydantic
+    #   pydantic-core
     #   sqlalchemy
 tzdata==2023.3
     # via pandas
