@@ -23,6 +23,11 @@ async def main(excel_file_name: str):
     items = excel_reader.get_items()
     items_with_api_error = [item for item in items if item.api_error == "yes"]
 
+    # all items succeeded -> stop
+    if len(items_with_api_error) == 0:
+        print(f"No items on current date ({today_date}) had API errors")
+        return
+
     # retrieve price for items with error
     steam_api = SteamAPI()
     items_with_api_error_with_price = await steam_api.items.add_items_price(items_with_api_error)

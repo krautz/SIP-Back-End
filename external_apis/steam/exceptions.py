@@ -1,5 +1,5 @@
 class SteamItemsAPIException(Exception):
-    def __init__(self, name: str, market_hash_name: str, status_code: int):
+    def __init__(self, name: str, market_hash_name: str, status_code: str):
         self.name = name
         self.market_hash_name = market_hash_name
         self.status_code = status_code

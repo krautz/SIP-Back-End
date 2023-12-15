@@ -5,7 +5,7 @@ from datetime import datetime
 from time import time
 from typing import Callable
 
-from httpx import AsyncClient
+from httpx import AsyncClient, ReadTimeout
 
 from external_apis.steam.constants import (
     CURRENCIES,
@@ -43,7 +43,12 @@ class SteamItemsAPI:
         )
 
         # request item price
-        response = await self.session.get(url)
+        try:
+            response = await self.session.get(url)
+        except ReadTimeout as exc:
+            raise SteamItemsAPIException(item.name, item.market_hash_name, "Timeout") from exc
+
+        # extract item price
         response_data: dict = response.json()
         if response_data and response_data.get("success"):
             return response_data["prices"][-1][1]
@@ -68,7 +73,12 @@ class SteamItemsAPI:
         )
 
         # request item price
-        response = await self.session.get(url)
+        try:
+            response = await self.session.get(url)
+        except ReadTimeout as exc:
+            raise SteamItemsAPIException(item.name, item.market_hash_name, "Timeout") from exc
+
+        # extract item price
         response_data: dict = response.json()
         if response_data and response_data.get("success"):
             return float(response_data["median_price"].split()[1])
@@ -90,7 +100,12 @@ class SteamItemsAPI:
         )
 
         # request item price
-        response = await self.session.get(url)
+        try:
+            response = await self.session.get(url)
+        except ReadTimeout as exc:
+            raise SteamItemsAPIException(item.name, item.market_hash_name, "Timeout") from exc
+
+        # extract item price
         match = re.search(r"var line1=(.*?);", response.text)
         if match:
             item_price_history = json.loads(match.group(1))

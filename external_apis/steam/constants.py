@@ -15,3 +15,5 @@ CURRENCIES = {
     "EUR": 3,
     "USD": 1,
 }
+
+REQUEST_TIMEOUT = 30
