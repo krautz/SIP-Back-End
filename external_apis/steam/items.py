@@ -5,7 +5,7 @@ from datetime import datetime
 from time import time
 from typing import Callable
 
-from httpx import AsyncClient, ReadTimeout
+from httpx import AsyncClient, RequestError
 
 from external_apis.steam.constants import (
     CURRENCIES,
@@ -45,8 +45,9 @@ class SteamItemsAPI:
         # request item price
         try:
             response = await self.session.get(url)
-        except ReadTimeout as exc:
-            raise SteamItemsAPIException(item.name, item.market_hash_name, "Timeout") from exc
+        except RequestError as exc:
+            message = exc.message if hasattr(exc, "message") else None
+            raise SteamItemsAPIException(item.name, item.market_hash_name, f"Request Error: {message}") from exc
 
         # extract item price
         response_data: dict = response.json()
@@ -75,8 +76,9 @@ class SteamItemsAPI:
         # request item price
         try:
             response = await self.session.get(url)
-        except ReadTimeout as exc:
-            raise SteamItemsAPIException(item.name, item.market_hash_name, "Timeout") from exc
+        except RequestError as exc:
+            message = exc.message if hasattr(exc, "message") else None
+            raise SteamItemsAPIException(item.name, item.market_hash_name, f"Request Error: {message}") from exc
 
         # extract item price
         response_data: dict = response.json()
@@ -102,8 +104,9 @@ class SteamItemsAPI:
         # request item price
         try:
             response = await self.session.get(url)
-        except ReadTimeout as exc:
-            raise SteamItemsAPIException(item.name, item.market_hash_name, "Timeout") from exc
+        except RequestError as exc:
+            message = exc.message if hasattr(exc, "message") else None
+            raise SteamItemsAPIException(item.name, item.market_hash_name, f"Request Error: {message}") from exc
 
         # extract item price
         match = re.search(r"var line1=(.*?);", response.text)
