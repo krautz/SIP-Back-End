@@ -20,7 +20,7 @@ Install pre-commit (in case you are developing this project): `pre-commit instal
 
 # Running Scripts
 
-When running the project, cd into `backend` project and run `export PYTHONPATH=$(pwd)`
+When running the project, cd into `backend/src` project and run `export PYTHONPATH=$(pwd)`
 
 To generate the spreadsheet, run `python scripts/generate_spreadsheet.py`
 

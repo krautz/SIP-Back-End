@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# NOTE: this script **MUST** be run at .../sip/backend directory
+# Usage Example: cd .../sip/backend/ && printf "3\nspreadsheets\n" | ./src/scripts/update_prices.sh
+
 # start virtual environment
 printf "####################################\n"
 printf "#  ACTIVATING VIRTUAL ENVIRONMENT  #\n"
@@ -30,10 +33,10 @@ do
     printf "####################################\n"
     printf "     UPDATING $filename\n"
     printf "####################################\n"
-    python scripts/update_prices_spreadsheet.py $file_split
+    python src/scripts/update_prices_spreadsheet.py $file_split
     for _ in $(seq 1 $retry_amount)
     do
-        python scripts/retry_api_errors_spreadsheet.py $file_split
+        python src/scripts/retry_api_errors_spreadsheet.py $file_split
     done
 done
 

@@ -9,4 +9,5 @@ line-length = 120
 ignore = ["E501"]
 extend-select = ["I001"]
 target-version = "py310"
+src = ["src"]
 extend-exclude = ["env", "*/versions/"]
