@@ -4,7 +4,7 @@ from pydantic import BaseModel
 class ItemWithPrice(BaseModel):
     app_id: int
     name: str
-    price_unitary: float
+    price_unitary: float | None
     amount: int
     api_error: str
     price_date: str
