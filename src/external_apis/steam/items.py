@@ -113,7 +113,7 @@ class SteamItemsAPI:
         if match:
             item_price_history = json.loads(match.group(1))
             return item_price_history[-1][1]
-        raise SteamItemsAPIException(item.name, item.market_hash_name, response.status_code)
+        raise SteamItemsAPIException(item.name, item.market_hash_name, response.status_code, extra=response.text)
 
     def get_item_price_getter(self, price_source: str) -> Callable[[dict, str], float]:
         """
