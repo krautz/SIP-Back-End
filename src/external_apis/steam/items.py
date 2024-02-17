@@ -12,6 +12,7 @@ from external_apis.steam.constants import (
     ITEM_PRICE_HISTORY_URL,
     ITEM_PRICE_MARKET_HMTL_URL,
     ITEM_PRICE_OVERVIEW_URL,
+    REQUEST_AWAIT_INTERVAL,
 )
 from external_apis.steam.exceptions import SteamItemsAPIException
 from models.items import AnyItem, ItemWithPrice
@@ -183,9 +184,7 @@ class SteamItemsAPI:
         self, items: list[AnyItem], currency: str = CURRENCIES["BRL"], price_source: str = "html"
     ) -> list[ItemWithPrice]:
         """
-        Request Steam API items last sold price and the date awaiting 11 second between requests.
-        As per stackoverflow issues, api is limited to 20 requests / minute
-        hence, using 11 seconds of delay between requests to play safe
+        Request Steam API items last sold price with serialized requests.
 
         :param items: list of items dictionaries
         :param currency: currency to retrieve the price
@@ -199,7 +198,7 @@ class SteamItemsAPI:
             print(f"Requesting item {index + 1}/{len(items)}")
             item_with_price = await self.add_price_to_item(item, currency, price_source)
             items_with_price.append(item_with_price)
-            await asyncio.sleep(11)
+            await asyncio.sleep(REQUEST_AWAIT_INTERVAL)
         return items_with_price
 
     async def add_items_price(
