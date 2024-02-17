@@ -29,6 +29,7 @@ async def main(excel_file_name: str):
         return
 
     # retrieve price for items with error
+    print(f"Retrying {len(items_with_api_error)} items that had API errors")
     steam_api = SteamAPI()
     items_with_api_error_with_price = await steam_api.items.add_items_price(items_with_api_error)
 
